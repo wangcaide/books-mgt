@@ -1,0 +1,16 @@
+spring:
+  profiles:
+    active: dev
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  cache:
+    cache-name: dbcache
+    caffeine:
+      # maximumSize 缓存的最大条数
+      # expireAfterAccess 当缓存项被访问后多长时间将会过期
+      spec: maximumSize=500,expireAfterAccess=600s
+logging:
+  level:
+    org.springframework: debug
+    com.github.wangcaide: debug
