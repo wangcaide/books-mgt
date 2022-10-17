@@ -32,6 +32,7 @@ import java.io.Reader;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -119,7 +120,7 @@ public class SecurityConfig {
                     return new SimpleGrantedAuthority(
                             resource.getResourceUrlMethod().toUpperCase() + "_" + resource.getResourceUrl());
                 }
-            }).toList();
+            }).collect(Collectors.toList());
             return new User(username, account.getPassword(), authorityList);
         };
     }

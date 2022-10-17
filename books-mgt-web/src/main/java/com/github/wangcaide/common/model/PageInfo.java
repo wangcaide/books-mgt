@@ -7,6 +7,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -50,7 +51,7 @@ public class PageInfo<T> implements Serializable {
         pageInfo.setPageSize(page.getSize());
         pageInfo.setTotalPage(page.getPages());
         pageInfo.setTotalCount(page.getTotal());
-        pageInfo.setData(page.getRecords().stream().map(t -> convert.apply(t)).toList());
+        pageInfo.setData(page.getRecords().stream().map(t -> convert.apply(t)).collect(Collectors.toList()));
         return pageInfo;
     }
 
