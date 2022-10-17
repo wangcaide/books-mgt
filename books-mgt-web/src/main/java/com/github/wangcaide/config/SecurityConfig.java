@@ -9,6 +9,8 @@ import com.github.wangcaide.mapper.ResourceMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,10 +22,14 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import javax.sql.DataSource;
+import java.io.Reader;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Objects;
 
@@ -43,12 +49,14 @@ public class SecurityConfig {
 
     private final ResourceMapper resourceMapper;
     private final AccountMapper accountMapper;
+    private final DataSource dataSource;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        initDbSchemaAndData();
 
         http.authorizeRequests(authorize -> {
-            authorize.antMatchers("/login", "/actuator/health", "/account/register").permitAll();
+            authorize.antMatchers("/login.html", "/actuator/health", "/account/register", "toLogin").permitAll();
             // load all authority 加载所有的权限
             // 数据库resource表中配置的http method + url path，这些链接资源都是需要控制的，需要有权限的用户才能访问
             List<ResourceEntity> resourceList = resourceMapper.selectList(
@@ -73,7 +81,7 @@ public class SecurityConfig {
         });
 
         http.formLogin()
-//                .loginPage("/login")//用户未登录时，访问任何资源都转跳到该路径，即登录页面
+                .loginPage("/login.html")//用户未登录时，访问任何资源都转跳到该路径，即登录页面
                 .loginProcessingUrl("/login")//登录表单form中action的地址，也就是处理认证请求的路径
                 .defaultSuccessUrl("/doc.html")//登录认证成功后默认转跳的路径
                 .and()
@@ -126,7 +134,8 @@ public class SecurityConfig {
                     "/swagger/**",
                     "/doc.html",
                     "/webjars/**",
-                    "/static/**"
+                    "/static/**",
+                    "**.html"
             );
         });
     }
@@ -144,5 +153,16 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
+    private void initDbSchemaAndData() {
+        try (Connection connection = dataSource.getConnection()) {
+            ScriptRunner runner=new ScriptRunner(connection);
+            log.info("init schema and data");
+            Reader schemaReader = Resources.getResourceAsReader("db/schema-full.sql");
+            runner.runScript(schemaReader);
+            Reader dataReader = Resources.getResourceAsReader("db/init-data.sql");
+            runner.runScript(dataReader);
+        } catch (Exception e) {
+            log.error("初始化数据库表结构及数据异常", e);
+        }
+    }
 }
