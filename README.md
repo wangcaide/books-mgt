@@ -82,11 +82,95 @@ Spring validation
 * Maven 3.8.6
 * git 2.33.0
 * IntelliJ IDEA 2022.2.3
-
+#### 启动服务
 ```
 git clone https://github.com/wangcaide/books-mgt.git
 cd books-mgt/books-mgt-bom
 mvn install
 cd ..
-
+mvn install
+cd books-mgt-web
+mvn spring-boot:run
 ```
+启动服务后，在浏览器上访问
+```
+http://localhost:8080/login.html
+```
+即可看到登陆页面
+
+初始化数据中已添加了两个用户
+* 18689778889/123456(图书管理员) 
+* 18689778888/123456(读者)
+
+登陆成功后会跳转到swagger页面
+```
+http://localhost:8080/doc.html
+```
+
+### 图书管理员 调用接口流程
+使用18689778889/123456 账户登陆
+##### 图书入库
+
+图书相关 -> 图书入库 -> 调试 -> 请求参数
+```
+{
+"bookDescription": "测试图书1",
+"bookIsbn": "1234567890",
+"bookName": "测试图书1",
+"publisher": "新华出版社",
+"totalNum": 10
+}
+```
+##### 查询图书列表
+图书相关 -> 查询图书列表 -> 调试 -> 请求参数
+
+可输入 isbn/bookName/pageNum/pageSize进行查询
+
+##### 图书报废-遗失 库存总数量减1 
+图书相关 -> 图书报废-遗失 库存总数量减1 -> 调试 -> 请求参数
+
+isbn输入之前入库所填的1234567890
+
+执行完成后可再调用查询图书列表接口，可看到图书总数已减1
+
+##### 借书
+图书借阅相关 -> 借书 -> 调试 -> 请求参数
+```
+borrowBy -> 18689778888 (读者username)
+expirationTime -> 2022-10-30
+isbn -> 1234567890
+```
+##### 归还图书
+图书借阅相关 -> 归还图书 -> 调试 -> 请求参数
+```
+borrowBy -> 18689778888 (读者username)
+isbn -> 1234567890
+```
+##### 退出登陆
+http://localhost:8080/logout
+
+### 读者 调用接口流程
+使用18689778888/123456 账户登陆
+##### 查询图书列表
+图书相关 -> 查询图书列表 -> 调试 -> 请求参数
+
+可输入 isbn/bookName/pageNum/pageSize进行查询
+
+**使用读者账户登陆，调用其他接口会被拦截**
+
+### 用户注册
+用户注册接口是没有权限控制的接口
+
+登陆到swagger页面后，在浏览器打开新的tab页输入http://localhost:8080/logout退出登陆
+
+然后在 账户 -> 账户注册 -> 调试 -> 请求参数
+```
+{
+  "firstName": "四",
+  "lastName": "李",
+  "password": "123456",
+  "phoneNumber": "18689778887",
+  "username": ""
+}
+```
+即可注册一个读者角色的账户

@@ -3,8 +3,8 @@ package com.github.wangcaide.config;
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * <p>
@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Bean;
  * @version v1.0.0
  * @date 2022-10-15 00:42:50
  */
-@MapperScan("com.github.wangcaide.mapper")
+@Configuration
 public class MybatisConfig {
 
     @Bean
